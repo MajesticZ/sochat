@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Chat Example</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/js/angular.min.js"></script>
+    <script src="/js/angular-cookie.min.js"></script>
+    <script src="/js/angular-animate.min.js"></script>
+    <script src="/js/angular-aria.min.js"></script>
+    <script src="/js/angular-messages.min.js"></script>
+    <link rel="stylesheet" href="/css/angular-material.min.css">
+    <link rel="stylesheet" href="/css/custom.css">
+    <script src="/js/socket.io.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/angular-material.min.js"></script>
+    <script src="/controller/listController.js"></script>
+  </head>
+  <body ng-app="SoChat">
+  <div id="mainDiv" ng-controller="ListController" ng-cloak layout-gt-sm="row" layout="column">
+    <div flex-gt-sm="50" flex>
+      <md-toolbar layout="row" class="md-hue-3">
+        <div class="md-toolbar-tools">
+          <span>Online</span>
+        </div>
+      </md-toolbar>
+      <md-content>
+        <md-list flex>
+          <md-list-item class="md-3-line" ng-repeat="online in userOnline" ng-click="talkWith(online)">
+            <div class="md-list-item-text" layout="column">
+              <h3>{{ online }}</h3>
+              </md-icon>
+            </div>
+          </md-list-item>
+        </md-list>
+      </md-content>
+    </div>
+    <md-divider></md-divider>
+    <div flex-gt-sm="50" flex>
+      <md-toolbar layout="row" class="md-hue-3">
+        <div class="md-toolbar-tools">
+          <span>Active Talk</span>
+        </div>
+      </md-toolbar>
+      <md-content>
+        <md-list class="md-dense" flex>
+          <md-list-item class="md-3-line" ng-repeat="talk in activeTalk">
+            <div class="md-list-item-text" layout="column">
+              <h3>{{ talk }}</h3>
+              <md-divider ></md-divider>
+            </div>
+          </md-list-item>
+        </md-list>
+      </md-content>
+    </div>
+  </div>
+  </body>
+</html>

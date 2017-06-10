@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Chat Example</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/js/angular.min.js"></script>
+    <script src="/js/angular-cookie.min.js"></script>
+    <script src="/js/angular-animate.min.js"></script>
+    <script src="/js/angular-aria.min.js"></script>
+    <script src="/js/angular-messages.min.js"></script>
+    <link rel="stylesheet" href="/css/angular-material.min.css">
+    <link rel="stylesheet" href="/css/custom.css">
+    <script src="/js/socket.io.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/angular-material.min.js"></script>
+    <script src="/controller/loginController.js"></script>
+  </head>
+  <body ng-app="SoChat" layout="column" flex>
+    <md-content ng-controller="LoginController">
+      <div layout="column" layout-align="center center" layout-margin> 
+        <img src="img/logo.png" class="logo">
+      </div>
+      <md-content>
+        <div layout="column" layout-align="center center">
+          <form name="loginForm" layout-xs ng-submit="signInForm()">
+            <md-input-container class="sign-in-login-input">
+              <input name="login" ng-model="login" required placeholder="Login">
+              <div ng-messages="loginForm.login.$error" role="alert">
+                <div ng-message-exp="['required']">Required!</div>
+              </div>
+            </md-input-container>
+            <div layout="row" layout-align="center center">
+              <md-button class="md-raised md-primary" type="submit">Sign in</md-button>
+            </div>
+          </form>
+        </div>
+      </md-content>
+    </md-content>
+  </body>
+</html>
