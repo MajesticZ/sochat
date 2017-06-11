@@ -1,6 +1,7 @@
 const http = require('http');
 const socketio = require('socket.io');
 const express = require('express');
+const morgan = require('morgan');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -17,7 +18,8 @@ var server = http.createServer(app);
 var io = socketio(server);
 
 // EXPRESS SETUP
-app.use(express.static(__dirname + '/client'));
+app.use(express.static(__dirname + '/client/public'));
+app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({'extended': 'true'}));
 app.use(bodyParser.json());
@@ -41,12 +43,6 @@ app.post('/chat/signin', function(req, res) {
 
 app.post('/chat/signup', function(req, res) {
     UserService.signUp(req.body.login, req.body.password, res);
-});
-
-
-app.get('/chat/:host', function(req, res) {
-    res.location('/chat/' + req.params.host);
-    res.sendFile('./client/list.html', {"root": __dirname});
 });
 
 app.get('/chat/list/onlineUsers/:forUser', function(req, res) {
@@ -196,11 +192,20 @@ io.on('connection', function(socket) {
 });
 
 // STARTUP
-server.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function() {});
-
 app.get('*', function(req, res) {
-    res.sendFile('./client/index.html', {"root": __dirname});
+    if (req.cookies && req.cookies.login && req.cookies.token) {
+        UserService.checkToken(req.cookies.login, req.cookies.token, {
+            failure: './client/index.html',
+            success: './client/chat.html',
+            root: {
+                "root": __dirname
+            }
+        }, res);
+    } else {
+        res.sendFile('./client/index.html', {"root": __dirname});
+    }
 });
+app.listen(8080);
 
 // TODO
 // single page app
@@ -211,3 +216,5 @@ app.get('*', function(req, res) {
 // online users
 // history talk
 // https
+// migrate to jade
+// list rolup

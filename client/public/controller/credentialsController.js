@@ -14,16 +14,18 @@ app.controller('CredentialsController', [
                     'login': $scope.login,
                     'password': $scope.password
                 }).then(function(res) {
-                    if (res.data.error.wrongPassword) {
-                        createMassage("Wrong password");
-                    } else if (res.data.error.userDontExist) {
-                        createMassage("User don't exist");
-                    } else if (res.data.error.userAlreadySignin) {
-                        createMassage("User already signin");
-                    } else if (res.data.error.somethingWrong) {
-                        createMassage("Something going wrong with server");
+                    if (res.data.error) {
+                        if (res.data.error.wrongPassword) {
+                            createMassage("Wrong password");
+                        } else if (res.data.error.userDontExist) {
+                            createMassage("User don't exist");
+                        } else if (res.data.error.userAlreadySignin) {
+                            createMassage("User already signin");
+                        } else if (res.data.error.somethingWrong) {
+                            createMassage("Something going wrong with server");
+                        }
                     } else {
-                        window.location = '/chat/' + $cookies.get('login');
+                        window.location = '/chat/';
                     }
                 });
             } else {
@@ -38,12 +40,14 @@ app.controller('CredentialsController', [
                     'login': $scope.login,
                     'password': $scope.password
                 }).then(function(res) {
-                    if (res.data.error.userAlreadyExist) {
-                        createMassage("User already exist");
-                    } else if (res.data.error.somethingWrong) {
-                        createMassage("Something going wrong with server");
-                    }  else {
-                        window.location = '/chat/' + $cookies.get('login');
+                    if (res.data.error) {
+                        if (res.data.error.userAlreadyExist) {
+                            createMassage("User already exist");
+                        } else if (res.data.error.somethingWrong) {
+                            createMassage("Something going wrong with server");
+                        }
+                    } else {
+                        window.location = '/chat/';
                     }
                 });
             } else {

@@ -8,6 +8,8 @@ const ErrorMessage = require('../util/error-messages.js');
 
 var UserDAO = null;
 
+const TokenTimeout = 800000;
+
 module.exports = function(mongoose) {
     UserDAO = mongoose.model('User', {
         login: String,
@@ -53,21 +55,14 @@ module.exports = function(mongoose) {
             }, {
                 $set: {
                     token: token,
-                    tokenExpiredTime: moment().add(12, 'hours')
+                    tokenExpiredTime: moment().add(TokenTimeout, 'ms')
                 }
             }, function(err, updated) {
                 if (err) {
                     console.log(err);
                     ErrorMessage.response(res, ErrorMessage.somethingWrong);
                 } else {
-                    res.cookie('login', user.login, {
-                        maxAge: 800000,
-                        httpOnly: false
-                    });
-                    res.cookie('token', token, {
-                        maxAge: 800000,
-                        httpOnly: false
-                    });
+                    UserService.addSessionCookie(login, token, res);
                     res.end();
                 }
             });
@@ -78,21 +73,67 @@ module.exports = function(mongoose) {
                 login: login,
                 password: crypto.createHmac('sha256', password).digest('hex'),
                 token: token,
-                tokenExpiredTime: moment().add(12, 'hours')
+                tokenExpiredTime: moment().add(TokenTimeout, 'ms')
             }, function(err, created) {
                 if (err) {
                     console.log(err);
                     ErrorMessage.response(res, ErrorMessage.somethingWrong);
                 } else {
-                    res.cookie('login', login, {
-                        maxAge: 800000,
-                        httpOnly: false
-                    });
-                    res.cookie('token', token, {
-                        maxAge: 800000,
-                        httpOnly: false
-                    });
+                    UserService.addSessionCookie(login, token, res);
                     res.end();
+                }
+            });
+        },
+        addSessionCookie: function(login, token, res){
+            res.cookie('login', login, {
+                maxAge: TokenTimeout,
+                httpOnly: false
+            });
+            res.cookie('token', token, {
+                maxAge: TokenTimeout,
+                httpOnly: false
+            });
+        },
+        checkToken: function(login, token, urls, res) {
+            UserDAO.findOne({
+                'login': login,
+                'token': token
+            }, 'login tokenExpiredTime', function(err, user) {
+                if (err) {
+                    console.log(err);
+                    res.sendFile(urls.failure, urls.root);
+                } else if (user === null || user.tokenExpiredTime < new Date()) {
+                    res.sendFile(urls.failure, urls.root);
+                } else {
+                    UserService.refreshToken(login);
+                    res.location('/chat/');
+                    res.sendFile(urls.success, urls.root);
+                }
+            });
+        },
+        refreshToken: function(login) {
+            UserDAO.update({
+                login: login
+            }, {
+                $set: {
+                    tokenExpiredTime: moment().add(TokenTimeout, 'ms')
+                }
+            }, function(err, updated) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        },
+        removeToken: function(login) {
+            UserDAO.update({
+                'login': login
+            }, {
+                $set: {
+                    token: ''
+                }
+            }, function(err, updated) {
+                if (err) {
+                    console.log(err);
                 }
             });
         }
