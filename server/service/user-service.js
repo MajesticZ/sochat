@@ -7,6 +7,7 @@ const ConnectionInfo = require('../util/connection-info.js');
 const ErrorMessage = require('../util/error-messages.js');
 
 var UserDAO = null;
+var UserService = null;
 
 const TokenTimeout = 800000;
 
@@ -125,19 +126,6 @@ module.exports = function(mongoose) {
             }, {
                 $set: {
                     tokenExpiredTime: moment().add(TokenTimeout, 'ms')
-                }
-            }, function(err, updated) {
-                if (err) {
-                    console.log(err);
-                }
-            });
-        },
-        removeToken: function(login) {
-            UserDAO.update({
-                'login': login
-            }, {
-                $set: {
-                    token: ''
                 }
             }, function(err, updated) {
                 if (err) {

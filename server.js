@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const ConnectionInfo = require('./server/util/connection-info.js');
 const ErrorMessage = require('./server/util/error-messages.js');
 const UserService = require('./server/service/user-service.js')(mongoose);
+const MessageService = require('./server/service/message-service.js')(mongoose);
 
 // GLOBAL
 var app = express();
@@ -27,14 +28,6 @@ app.use(bodyParser.json({type: 'application/vnd.api+json'}));
 
 // MONGO SETUP
 mongoose.connect('mongodb://localhost:27017/chat');
-
-var Message = mongoose.model('Message', {
-    reciver1: String,
-    reciver2: String,
-    from: String,
-    time: String,
-    msg: String
-});
 
 // ROUTING
 app.post('/chat/signin', function(req, res) {
@@ -55,27 +48,15 @@ app.get('/chat/list/onlineUsers/:forUser/:withToken', function(req, res) {
 
 app.get('/chat/history/:forUser/:withToken', function(req, res) {
     UserService.checkToken(req.params.forUser, req.params.withToken, res, function () {
-        // ConnectionInfo.getOnlineUser(req.params.forUser, res);
+        MessageService.getHistory(req.params.forUser, res);
     }, function () {
         ConnectionInfo.connections[req.params.forUser].emit('sessionExpired');
     });
-    var socket = ConnectionInfo.connections[req.params.host].socket;
-    ConnectionInfo.connections[req.params.host].activeTalk.push({client: req.params.client});
-    socket.emit('refreshOnline');
-    socket.emit('refreshActive');
-    res.cookie('host', req.params.host, {
-        maxAge: 800000,
-        httpOnly: false
-    });
-    res.cookie('client', req.params.client, {
-        maxAge: 800000,
-        httpOnly: false
-    });
-    res.location('/chat/' + req.params.client);
-    res.sendFile('./client/talk.html', {"root": __dirname});
 });
 
-app.get('/chat/getTalk/:host/:client', function(req, res) {
+app.get('/chat/history/:forUser/:withToken/:withClient', function(req, res) {
+    // UPDATE READED
+    // EMIT HISTORY
     var reciver1 = req.params.client < req.params.host
         ? req.params.client
         : req.params.host;
@@ -106,11 +87,12 @@ io.on('connection', function(socket) {
         socket.forLogin = login;
         ConnectionInfo.connections[login] = socket;
         for (var key in ConnectionInfo.connections) {
-            ConnectionInfo.connections[key].socket.emit('refreshOnline');
+            ConnectionInfo.connections[key].emit('refreshOnline');
         }
     });
 
     socket.on('send', function(msg) {
+        // CLIENT REFRESH HISTORY
         socket.emit('reciveMsg', {
             msg: msg.msg,
             time: msg.time,
@@ -166,9 +148,7 @@ app.get('*', function(req, res) {
 server.listen(8080, function() {});
 
 // TODO
-// history talk
-// chat bootstrap css
+// +chat bootstrap css
+// +history talk
 // https
 // list rolup
-// html different scrollbar
-// migrate to jade

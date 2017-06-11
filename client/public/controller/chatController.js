@@ -28,15 +28,15 @@ app.controller('ChatController', [
         });
 
         socket.on('refreshHistory', function() {
-            $scope.history = history;
+            $http.get('/chat/history/' + $scope.login + '/' + $scope.token).then(function(res) {
+                $scope.history = res.data;
+            });
         });
-        //
-        //
-        //
-        // $scope.host = $cookies.get('host');
-        // $scope.client = $cookies.get('client');
-        // $scope.msg = "";
-        //
+
+        $scope.startTalk = function(withUser){
+            // TODO
+            $scope.activeTalk = withUser;
+        }
         // $http.get('/chat/getTalk/' + $scope.host + '/' + $scope.client).then(function(res) {
         //   res.data.forEach(function(msg) {
         //     var div = $('<div>').append($('<p>').text(msg.msg)).append($('<time>').text(msg.time)).addClass("msg");
