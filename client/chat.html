@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Chat Example</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/js/angular.min.js"></script>
+  <script src="/js/angular-cookie.min.js"></script>
+  <script src="/js/angular-messages.min.js"></script>
+  <link rel="stylesheet" href="/css/bootstrap-font.min.css">
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/custom.css">
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/bootstrap.min.js"></script>
+  <script src="/js/socket.io.js"></script>
+  <script src="/controller/chatController.js"></script>
+</head>
+
+<body ng-app="SoChat">
+  <div class="container chat-container" ng-controller="ChatController">
+    <div class="col-lg-3 chat-list">
+      <ul class="list-group" ng-if="connectedToSocket" id="talkInfoPanel">
+        <li class="list-group-item danger">Online</li>
+        <li class="list-group-item" ng-repeat="talkInfo in online">
+          {{talkInfo.client}}
+          <span ng-if="talkInfo.unread" class="badge">{{talkInfo.unread}}</span>
+        </li>
+        <li class="list-group-item danger">History talk</li>
+        <li class="list-group-item" ng-repeat="talkInfo in history">
+          {{talkInfo.client}}
+          <span ng-if="talkInfo.unread" class="badge">{{talkInfo.unread}}</span>
+        </li>
+      </ul>
+    </div>
+    <div class="col-lg-9 chat-talk">
+      <ol id="chat" class="chat">
+      </ol>
+      <input ng-model="msg" class="textarea" type="text" placeholder="Type here!" ng-keyup="sendMsg($event)" />
+    </div>
+  </div>
+</body>
+
+</html>

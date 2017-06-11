@@ -1,17 +1,70 @@
+@media screen and (min-width: 480px) {
+    .logo {
+        margin-top: 200px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .logo {
+        margin-top: 50px;
+    }
+}
+
+.logo {
+    margin-bottom: 20px;
+}
+
+@media screen and (max-width: 480px) {
+    .btn {
+        margin-bottom: 10px;
+    }
+}
+
+.list-group-item.danger, .list-group-item.danger:hover, .list-group-item.danger:focus {
+    z-index: 2;
+    color: #ffffff;
+    background-color: #e51c23;
+    border-color: #e51c23;
+}
+
+.chat-container {
+    width: 100%;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+@media screen and (max-width: 480px) {
+    .chat-list {
+        padding-right: 0px;
+    }
+    .chat-talk {
+        padding-left: 0px;
+    }
+}
+
+.chat-list {
+    padding-left: 0px;
+}
+
+.chat-talk {
+    padding-right: 0px;
+}
+
 @import url(https://fonts.googleapis.com/css?family=Lato:100,300,400,700);
 @import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css);
-
 html, body {
     background: #e5e5e5;
     font-family: 'Lato', sans-serif;
     margin: 0px auto;
 }
-::selection{
-  background: rgba(82,179,217,0.3);
-  color: inherit;
+
+::selection {
+    background: rgba(82, 179, 217, 0.3);
+    color: inherit;
 }
-a{
-  color: rgba(82,179,217,0.9);
+
+a {
+    color: rgba(82, 179, 217, 0.9);
 }
 
 
@@ -25,6 +78,7 @@ a{
     margin-top: 60px;
     margin-bottom: 10px;
 }
+
 .chat li {
     padding: 0.5rem;
     overflow: hidden;
@@ -54,6 +108,7 @@ a{
     border-top-left-radius: 0px;
     box-shadow: -1px 2px 0px #D4D4D4;
 }
+
 .other:before {
     content: "";
     position: relative;
@@ -71,14 +126,17 @@ a{
     justify-content: flex-end;
     align-items: flex-end;
 }
+
 .self .msg {
     order: 1;
     border-bottom-right-radius: 0px;
     box-shadow: 1px 2px 0px #D4D4D4;
 }
+
 .self .avatar {
     order: 2;
 }
+
 .self .avatar:after {
     content: "";
     position: relative;
@@ -100,11 +158,13 @@ a{
     border-radius: 2px;
     box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.07);
 }
+
 .msg p {
     font-size: 0.8rem;
     margin: 0 0 0.2rem 0;
     color: #777;
 }
+
 .msg img {
     position: relative;
     display: block;
@@ -118,15 +178,17 @@ a{
     -moz-user-select: none;
     -ms-user-select: none;
 }
+
 @media screen and (max-width: 800px) {
     .msg img {
-    width: 300px;
+        width: 300px;
+    }
 }
-}
+
 @media screen and (max-width: 550px) {
     .msg img {
-    width: 200px;
-}
+        width: 200px;
+    }
 }
 
 .msg time {
@@ -140,8 +202,9 @@ a{
     -moz-user-select: none;
     -ms-user-select: none;
 }
-.msg time:before{
-    content:"\f017";
+
+.msg time:before {
+    content: "\f017";
     color: #ddd;
     font-family: FontAwesome;
     display: inline-block;
@@ -149,8 +212,12 @@ a{
 }
 
 @-webikt-keyframes pulse {
-  from { opacity: 0; }
-  to { opacity: 0.5; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.5;
+    }
 }
 
 ::-webkit-scrollbar {
@@ -161,7 +228,7 @@ a{
     height: 12px;
     max-height: 12px;
     background: #e5e5e5;
-    box-shadow: inset 0px 50px 0px rgba(82,179,217,0.9), inset 0px -52px 0px #fafafa;
+    box-shadow: inset 0px 50px 0px rgba(82, 179, 217, 0.9), inset 0px -52px 0px #fafafa;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -174,18 +241,19 @@ a{
 
 ::-webkit-scrollbar-thumb:hover {
     background: #b0b0b0;
-  box-shadow: inset 0px 0px 3px #888;
+    box-shadow: inset 0px 0px 3px #888;
 }
 
 ::-webkit-scrollbar-thumb:active {
     background: #aaa;
-  box-shadow: inset 0px 0px 3px #7f7f7f;
+    box-shadow: inset 0px 0px 3px #7f7f7f;
 }
 
 ::-webkit-scrollbar-button {
     display: block;
     height: 26px;
 }
+
 
 /* T Y P E */
 
