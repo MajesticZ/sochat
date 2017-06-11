@@ -62,3 +62,6 @@ typings/
 
 # Database directory
 database
+
+# Ternjs
+.tern-project
