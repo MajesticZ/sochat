@@ -1,42 +1,58 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <title>Chat Example</title>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="/js/angular.min.js"></script>
-    <script src="/js/angular-cookie.min.js"></script>
-    <script src="/js/angular-animate.min.js"></script>
-    <script src="/js/angular-aria.min.js"></script>
-    <script src="/js/angular-messages.min.js"></script>
-    <link rel="stylesheet" href="/css/angular-material.min.css">
-    <link rel="stylesheet" href="/css/custom.css">
-    <script src="/js/socket.io.js"></script>
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/angular-material.min.js"></script>
-    <script src="/controller/loginController.js"></script>
-  </head>
-  <body ng-app="SoChat" layout="column" flex>
-    <md-content ng-controller="LoginController">
-      <div layout="column" layout-align="center center" layout-margin> 
-        <img src="img/logo.png" class="logo">
-      </div>
-      <md-content>
-        <div layout="column" layout-align="center center">
-          <form name="loginForm" layout-xs ng-submit="signInForm()">
-            <md-input-container class="sign-in-login-input">
-              <input name="login" ng-model="login" required placeholder="Login">
-              <div ng-messages="loginForm.login.$error" role="alert">
-                <div ng-message-exp="['required']">Required!</div>
-              </div>
-            </md-input-container>
-            <div layout="row" layout-align="center center">
-              <md-button class="md-raised md-primary" type="submit">Sign in</md-button>
-            </div>
-          </form>
+
+<head>
+  <title>Chat Example</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/js/angular.min.js"></script>
+  <script src="/js/angular-cookie.min.js"></script>
+  <script src="/js/angular-messages.min.js"></script>
+  <script src="/js/angular-aria.min.js"></script>
+  <link rel="stylesheet" href="/css/bootstrap-font.min.css">
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/custom.css">
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/bootstrap.min.js"></script>
+  <script src="/js/socket.io.js"></script>
+  <script src="/controller/credentialsController.js"></script>
+</head>
+
+<body ng-app="SoChat">
+  <div class="container" ng-controller="CredentialsController">
+    <div class="row">
+      <div id="mainPanel" class="col-lg-4 col-lg-offset-4">
+        <div>
+          <img src="img/logo.png" class="center-block logo">
         </div>
-      </md-content>
-    </md-content>
-  </body>
+        <form role="form" id="credentialsForm" name="credentialsForm" data-toggle="validator">
+          <div class="form-group" ng-class="{ 'has-error': credentialsForm.login.$touched && credentialsForm.login.$invalid }">
+            <label class="control-label" for="login">Login</label>
+            <input class="form-control" name="login" ng-model="login" value="" type="text" required>
+            <div ng-messages="credentialsForm.login.$error" ng-if="credentialsForm.login.$touched" role="alert">
+              <p ng-message="required" for="login">Login is required.</p>
+            </div>
+          </div>
+          <div class="form-group" ng-class="{ 'has-error': credentialsForm.password.$touched && credentialsForm.password.$invalid }">
+            <label class="control-label" for="password">Password</label>
+            <input class="form-control" name="password" ng-model="password" value="" type="password" required>
+            <div ng-messages="credentialsForm.password.$error" ng-if="credentialsForm.password.$touched" role="alert">
+              <p ng-message="required" for="password">Password is required.</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6">
+              <a href="#" class="btn btn-default center-block" ng-click="signUp()">Sign up</a>
+            </div>
+            <div class="col-lg-6">
+              <a href="#" class="btn btn-danger center-block" ng-click="signIn()">Sign in</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+
 </html>
