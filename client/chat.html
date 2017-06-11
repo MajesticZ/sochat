@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <title>Chat Example</title>
+  <title>SoChat</title>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,16 +21,15 @@
 <body ng-app="SoChat">
   <div class="container chat-container" ng-controller="ChatController">
     <div class="col-lg-3 chat-list">
-      <ul class="list-group" ng-if="connectedToSocket" id="talkInfoPanel">
+      <ul class="list-group" id="talkInfoPanel">
         <li class="list-group-item danger">Online</li>
         <li class="list-group-item" ng-repeat="talkInfo in online">
-          {{talkInfo.client}}
-          <span ng-if="talkInfo.unread" class="badge">{{talkInfo.unread}}</span>
+          {{talkInfo}}
         </li>
         <li class="list-group-item danger">History talk</li>
         <li class="list-group-item" ng-repeat="talkInfo in history">
           {{talkInfo.client}}
-          <span ng-if="talkInfo.unread" class="badge">{{talkInfo.unread}}</span>
+          <span ng-if="talkInfo.client !== activeTalk &&talkInfo.unread" class="badge">{{talkInfo.unread}}</span>
         </li>
       </ul>
     </div>

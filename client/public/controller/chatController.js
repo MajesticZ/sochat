@@ -9,24 +9,27 @@ app.controller('ChatController', [
         $scope.token = $cookies.get('token');
         $scope.online = [];
         $scope.history = [];
-        $scope.connectedToSocket = false;
-        // /* global io */
-        // var socket = io();
-        //
-        // socket.on('connect', function() {
-        //     socket.emit('identify', $scope.login);
-        // });
-        //
-        // socket.on('identifyDone', function() {
-        //     /* global $ */
-        //     $('#talkInfoPanel').removeAttr('ng-cloak');
-        // });
-        //
-        // socket.on('refreshTalkInfo', function(info) {
-        //     $scope.online = info.online;
-        //     $scope.active = info.active;
-        //     $scope.history = info.history;
-        // });
+        $scope.activeTalk = "";
+        /* global io */
+        var socket = io();
+
+        socket.on('connect', function() {
+            socket.emit('identify', $scope.login);
+        });
+
+        socket.on('sessionExpired', function() {
+            window.location = "/";
+        });
+
+        socket.on('refreshOnline', function() {
+            $http.get('/chat/list/onlineUsers/' + $scope.login + '/' + $scope.token).then(function(res) {
+                $scope.online = res.data;
+            });
+        });
+
+        socket.on('refreshHistory', function() {
+            $scope.history = history;
+        });
         //
         //
         //

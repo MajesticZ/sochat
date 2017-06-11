@@ -45,33 +45,20 @@ app.post('/chat/signup', function(req, res) {
     UserService.signUp(req.body.login, req.body.password, res);
 });
 
-app.get('/chat/list/onlineUsers/:forUser', function(req, res) {
-    var onlineUsers = [];
-    var activeTalk = ConnectionInfo.connections[req.params.forUser].activeTalk;
-    for (var key in ConnectionInfo.connections) {
-        var isActive = false;
-        for (var i = 0; i < activeTalk.length; ++i) {
-            if (activeTalk[i].client === key) {
-                isActive = true;
-                break;
-            }
-        }
-        if (key !== req.params.forUser && !isActive) {
-            onlineUsers.push(key);
-        }
-    }
-    res.json(onlineUsers);
-});
-
-app.get('/chat/list/activeTalk/:forUser', function(req, res) {
-    var talks = [];
-    ConnectionInfo.connections[req.params.forUser].activeTalk.forEach(function(talk) {
-        talks.push(talk.client);
+app.get('/chat/list/onlineUsers/:forUser/:withToken', function(req, res) {
+    UserService.checkToken(req.params.forUser, req.params.withToken, res, function () {
+        ConnectionInfo.getOnlineUser(req.params.forUser, res);
+    }, function () {
+        ConnectionInfo.connections[req.params.forUser].emit('sessionExpired');
     });
-    res.json(talks);
 });
 
-app.get('/chat/createTalk/:host/:client', function(req, res) {
+app.get('/chat/history/:forUser/:withToken', function(req, res) {
+    UserService.checkToken(req.params.forUser, req.params.withToken, res, function () {
+        // ConnectionInfo.getOnlineUser(req.params.forUser, res);
+    }, function () {
+        ConnectionInfo.connections[req.params.forUser].emit('sessionExpired');
+    });
     var socket = ConnectionInfo.connections[req.params.host].socket;
     ConnectionInfo.connections[req.params.host].activeTalk.push({client: req.params.client});
     socket.emit('refreshOnline');
@@ -111,44 +98,15 @@ app.get('/chat/getTalk/:host/:client', function(req, res) {
 // SOCKET.IO
 io.on('connection', function(socket) {
     socket.on('disconnect', function() {
-        if (socket.forLogin !== undefined) {
-            delete ConnectionInfo.connections[socket.forLogin];
-            for (var key in ConnectionInfo.connections) {
-                ConnectionInfo.connections[key].socket.emit('refreshOnline');
-            }
-        } else if (socket.forTalk.host in ConnectionInfo.connections) {
-            var mainSocket = ConnectionInfo.connections[socket.forTalk.host].socket;
-            var talkIdx = 0;
-            for (var i = 0; i < ConnectionInfo.connections[socket.forTalk.host].activeTalk.length; ++i) {
-                if (ConnectionInfo.connections[socket.forTalk.host].activeTalk[i].client === socket.forTalk.client) {
-                    talkIdx = i;
-                    break;
-                }
-            }
-            ConnectionInfo.connections[socket.forTalk.host].activeTalk.splice(talkIdx, 1);
-            mainSocket.emit('refreshOnline');
-            mainSocket.emit('refreshActive');
-        }
+        socket.broadcast.emit('refreshOnline');
+        delete ConnectionInfo.connections[socket.forLogin];
     });
 
     socket.on('identify', function(login) {
         socket.forLogin = login;
-        ConnectionInfo.connections[login] = {};
-        ConnectionInfo.connections[login].activeTalk = [];
-        ConnectionInfo.connections[login].socket = socket;
+        ConnectionInfo.connections[login] = socket;
         for (var key in ConnectionInfo.connections) {
             ConnectionInfo.connections[key].socket.emit('refreshOnline');
-        }
-        socket.emit('identifyDone');
-    });
-
-    socket.on('createTalk', function(info) {
-        socket.forTalk = info;
-        for (var i = 0; i < ConnectionInfo.connections[info.host].activeTalk.length; ++i) {
-            if (ConnectionInfo.connections[info.host].activeTalk[i].client === info.client) {
-                ConnectionInfo.connections[info.host].activeTalk[i].socket = socket;
-                break;
-            }
         }
     });
 
@@ -194,7 +152,7 @@ io.on('connection', function(socket) {
 // STARTUP
 app.get('*', function(req, res) {
     if (req.cookies && req.cookies.login && req.cookies.token) {
-        UserService.checkToken(req.cookies.login, req.cookies.token, {
+        UserService.signInWithToken(req.cookies.login, req.cookies.token, {
             failure: './client/index.html',
             success: './client/chat.html',
             root: {
@@ -205,16 +163,12 @@ app.get('*', function(req, res) {
         res.sendFile('./client/index.html', {"root": __dirname});
     }
 });
-app.listen(8080);
+server.listen(8080, function() {});
 
 // TODO
-// single page app
-// restore session
-// logout
-// chat bootstrap css
-// active talk
-// online users
 // history talk
+// chat bootstrap css
 // https
-// migrate to jade
 // list rolup
+// html different scrollbar
+// migrate to jade
