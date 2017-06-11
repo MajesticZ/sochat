@@ -5,9 +5,6 @@ app.controller('CredentialsController', [
     '$http',
     '$cookies',
     function($scope, $http, $cookies) {
-        // if (res.data.error.sessionHasExpired) {
-        //     createMassage("Session has expired");
-        // }
         $scope.signIn = function() {
             if (!$scope.credentialsForm.$invalid) {
                 $http.post('/chat/signin', {
