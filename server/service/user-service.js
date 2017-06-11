@@ -35,6 +35,14 @@ module.exports = function(mongoose) {
                 }
             });
         },
+        signInWithToken: function(login, token, urls, res) {
+            UserService.checkToken(login, token, res, function(res) {
+                res.location('/chat/');
+                res.sendFile(urls.success, urls.root);
+            }, function(res) {
+                res.sendFile(urls.failure, urls.root);
+            });
+        },
         signUp: function(login, password, res) {
             UserDAO.findOne({
                 'login': login
@@ -84,7 +92,7 @@ module.exports = function(mongoose) {
                 }
             });
         },
-        addSessionCookie: function(login, token, res){
+        addSessionCookie: function(login, token, res) {
             res.cookie('login', login, {
                 maxAge: TokenTimeout,
                 httpOnly: false
@@ -94,20 +102,20 @@ module.exports = function(mongoose) {
                 httpOnly: false
             });
         },
-        checkToken: function(login, token, urls, res) {
+        checkToken: function(login, token, res, success, failure) {
             UserDAO.findOne({
                 'login': login,
                 'token': token
             }, 'login tokenExpiredTime', function(err, user) {
                 if (err) {
                     console.log(err);
-                    res.sendFile(urls.failure, urls.root);
+                    failure(res);
                 } else if (user === null || user.tokenExpiredTime < new Date()) {
-                    res.sendFile(urls.failure, urls.root);
+                    failure(res);
                 } else {
                     UserService.refreshToken(login);
-                    res.location('/chat/');
-                    res.sendFile(urls.success, urls.root);
+                    UserService.addSessionCookie(login, token, res);
+                    success(res);
                 }
             });
         },
