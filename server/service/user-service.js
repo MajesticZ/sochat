@@ -41,6 +41,7 @@ module.exports = function(mongoose) {
                 res.location('/chat/');
                 res.sendFile(urls.success, urls.root);
             }, function(res) {
+                res.location('/');
                 res.sendFile(urls.failure, urls.root);
             });
         },
@@ -71,7 +72,7 @@ module.exports = function(mongoose) {
                     console.log(err);
                     ErrorMessage.response(res, ErrorMessage.somethingWrong);
                 } else {
-                    UserService.addSessionCookie(login, token, res);
+                    UserService.addSessionCookie(user.login, token, res);
                     res.end();
                 }
             });

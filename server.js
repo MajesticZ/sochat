@@ -39,40 +39,26 @@ app.post('/chat/signup', function(req, res) {
 });
 
 app.get('/chat/list/onlineUsers/:forUser/:withToken', function(req, res) {
-    UserService.checkToken(req.params.forUser, req.params.withToken, res, function () {
+    UserService.checkToken(req.params.forUser, req.params.withToken, res, function() {
         ConnectionInfo.getOnlineUser(req.params.forUser, res);
-    }, function () {
+    }, function() {
         ConnectionInfo.connections[req.params.forUser].emit('sessionExpired');
     });
 });
 
 app.get('/chat/history/:forUser/:withToken', function(req, res) {
-    UserService.checkToken(req.params.forUser, req.params.withToken, res, function () {
+    UserService.checkToken(req.params.forUser, req.params.withToken, res, function() {
         MessageService.getHistory(req.params.forUser, res);
-    }, function () {
+    }, function() {
         ConnectionInfo.connections[req.params.forUser].emit('sessionExpired');
     });
 });
 
 app.get('/chat/history/:forUser/:withToken/:withClient', function(req, res) {
-    // UPDATE READED
-    // EMIT HISTORY
-    var reciver1 = req.params.client < req.params.host
-        ? req.params.client
-        : req.params.host;
-    var reciver2 = req.params.client < req.params.host
-        ? req.params.host
-        : req.params.client;
-    Message.find({
-        'reciver1': reciver1,
-        'reciver2': reciver2
-    }, 'from time msg', function(err, talk) {
-        if (err) {
-            console.log(err);
-        } else if (talk) {
-            res.json(talk);
-        }
-        res.end();
+    UserService.checkToken(req.params.forUser, req.params.withToken, res, function() {
+        MessageService.getTalk(req.params.forUser, req.params.withClient, res);
+    }, function() {
+        ConnectionInfo.connections[req.params.forUser].emit('sessionExpired');
     });
 });
 
@@ -84,49 +70,36 @@ io.on('connection', function(socket) {
     });
 
     socket.on('identify', function(login) {
-        socket.forLogin = login;
-        ConnectionInfo.connections[login] = socket;
-        for (var key in ConnectionInfo.connections) {
-            ConnectionInfo.connections[key].emit('refreshOnline');
+        if (login) {
+            socket.forLogin = login;
+            ConnectionInfo.connections[login] = socket;
+            socket.emit('refreshHistory');
+            for (var key in ConnectionInfo.connections) {
+                ConnectionInfo.connections[key].emit('refreshOnline');
+            }
+        } else {
+            socket.emit('sessionExpired');
         }
     });
 
     socket.on('send', function(msg) {
-        // CLIENT REFRESH HISTORY
+        MessageService.createMassage(msg.host, msg.client, msg.host, msg.time, msg.msg);
         socket.emit('reciveMsg', {
             msg: msg.msg,
             time: msg.time,
             from: msg.host
         });
         if (msg.client in ConnectionInfo.connections) {
-            for (var i = 0; i < ConnectionInfo.connections[msg.client].activeTalk.length; ++i) {
-                if (ConnectionInfo.connections[msg.client].activeTalk[i].client === msg.host) {
-                    ConnectionInfo.connections[msg.client].activeTalk[i].socket.emit('reciveMsg', {
-                        msg: msg.msg,
-                        time: msg.time,
-                        from: msg.host
-                    });
-                    break;
-                }
+            if (ConnectionInfo.connections[msg.client].talkWith !== msg.host) {
+                ConnectionInfo.connections[msg.client].emit('refreshHistory');
+            } else {
+                ConnectionInfo.connections[msg.client].emit('reciveMsg', {
+                    msg: msg.msg,
+                    time: msg.time,
+                    from: msg.host
+                });
             }
         }
-        var reciver1 = msg.client < msg.host
-            ? msg.client
-            : msg.host;
-        var reciver2 = msg.client < msg.host
-            ? msg.host
-            : msg.client;
-        Message.create({
-            reciver1: reciver1,
-            reciver2: reciver2,
-            from: msg.host,
-            time: msg.time,
-            msg: msg.msg
-        }, function(err, msg) {
-            if (err) {
-                console.log(err);
-            }
-        });
     });
 
 });
@@ -142,13 +115,13 @@ app.get('*', function(req, res) {
             }
         }, res);
     } else {
+        res.location('/');
         res.sendFile('./client/index.html', {"root": __dirname});
     }
 });
 server.listen(8080, function() {});
 
 // TODO
-// +chat bootstrap css
-// +history talk
 // https
 // list rolup
+// watchifi

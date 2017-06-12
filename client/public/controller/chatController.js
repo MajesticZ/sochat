@@ -10,6 +10,7 @@ app.controller('ChatController', [
         $scope.online = [];
         $scope.history = [];
         $scope.activeTalk = "";
+        $scope.msg = "";
         /* global io */
         var socket = io();
 
@@ -33,53 +34,58 @@ app.controller('ChatController', [
             });
         });
 
-        $scope.startTalk = function(withUser){
-            // TODO
-            $scope.activeTalk = withUser;
+        $scope.startTalk = function(withUser) {
+                var isInHistory = false;
+                for (var i in $scope.history) {
+                    if ($scope.history[i].client === withUser) {
+                        isInHistory = true;
+                        break;
+                    }
+                }
+                if (!isInHistory) {
+                    $scope.history.push({client: withUser});
+                }
+                $('#chat').html("");
+                $scope.activeTalk = withUser;
+                $http.get('/chat/history/' + $scope.login + '/' + $scope.token + '/' + $scope.activeTalk).then(function(res) {
+                    res.data.forEach(function(msg) {
+                        var p = $('<p>').text(msg.msg);
+                        var time = $('<time>').text(msg.time);
+                        var text = $('<div>').append(p).append(time).addClass("text");
+                        var textWraper = $('<div>').append(text).addClass("text_wrapper");
+                        $('#chat').append($('<li>').append(textWraper).addClass(msg.from === $scope.login
+                            ? "message right appeared"
+                            : "message left appeared"));
+                    });
+                    var chatDiv = document.getElementById("chatDiv");
+                    chatDiv.scrollTop = chatDiv.scrollHeight;
+                });
         }
-        // $http.get('/chat/getTalk/' + $scope.host + '/' + $scope.client).then(function(res) {
-        //   res.data.forEach(function(msg) {
-        //     var div = $('<div>').append($('<p>').text(msg.msg)).append($('<time>').text(msg.time)).addClass("msg");
-        //     $('#chat').append($('<li>').append(div).addClass(msg.from === $scope.host
-        //       ? "self"
-        //       : "other"));
-        //   });
-        //   /* global $ */
-        //   window.scrollTo(0, 9999999);
-        //   $('#mainDiv').removeAttr('ng-cloak');
-        // });
-        //
-        // /* global io */
-        // var socket = io();
-        //
-        // socket.on('connect', function() {
-        //   socket.emit('createTalk', {
-        //     host: $scope.host,
-        //     client: $scope.client
-        //   });
-        // });
-        //
-        // socket.on('reciveMsg', function(msg) {
-        //   /* global $ */
-        //   var div = $('<div>').append($('<p>').text(msg.msg)).append($('<time>').text(msg.time)).addClass("msg");
-        //   $('#chat').append($('<li>').append(div).addClass(msg.from === $scope.host
-        //     ? "self"
-        //     : "other"));
-        //   window.scrollTo(0, 9999999);
-        // });
-        //
-        // $scope.sendMsg = function(event) {
-        //   if (event.keyCode == 13 && $scope.msg.length > 0) {
-        //     var date = new Date();
-        //     var time = date.getHours() + ':' + date.getMinutes();
-        //     socket.emit('send', {
-        //       host: $scope.host,
-        //       client: $scope.client,
-        //       msg: $scope.msg,
-        //       time: time
-        //     });
-        //     $scope.msg = "";
-        //   }
-        // };
+
+        socket.on('reciveMsg', function(msg) {
+            var p = $('<p>').text(msg.msg);
+            var time = $('<time>').text(msg.time);
+            var text = $('<div>').append(p).append(time).addClass("text");
+            var textWraper = $('<div>').append(text).addClass("text_wrapper");
+            $('#chat').append($('<li>').append(textWraper).addClass(msg.from === $scope.login
+                ? "message right appeared"
+                : "message left appeared"));
+            var chatDiv = document.getElementById("chatDiv");
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        });
+
+        $scope.sendMsg = function(event) {
+            if (event.keyCode == 13 && $scope.msg.length > 0 && $scope.activeTalk.length > 0) {
+                var date = new Date();
+                var time = date.getHours() + ':' + date.getMinutes();
+                socket.emit('send', {
+                    host: $scope.login,
+                    client: $scope.activeTalk,
+                    msg: $scope.msg,
+                    time: time
+                });
+                $scope.msg = "";
+            }
+        };
     }
 ]);
