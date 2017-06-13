@@ -9,7 +9,8 @@
         "start": "node server.js",
         "debug": "node debug server.js",
         "start-db": "mongod --dbpath=database",
-        "create-db": "mkdir database"
+        "create-db": "mkdir database",
+        "create-ssl-certificate": "mkdir ssl; cd ssl; openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes"
     },
     "dependencies": {
         "body-parser": "^1.17.2",
