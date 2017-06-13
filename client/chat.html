@@ -19,21 +19,21 @@
 </head>
 
 <body ng-app="SoChat">
-  <div class="container chat-container" ng-controller="ChatController">
-    <div id="listDiv" class="col-lg-3 chat-list">
+  <div class="container chat-container" ng-controller="ChatController" ng-init="showHistory = true; showOnline = true;">
+    <div id="listDiv" class="col-sm-3 chat-list">
       <ul class="list-group" id="talkInfoPanel">
-        <li class="list-group-item danger">Online</li>
-        <li class="list-group-item" ng-repeat="talkInfo in online" ng-click="startTalk(talkInfo)">
+        <li ng-click="showOnline = !showOnline" class="list-group-item danger">Online</li>
+        <li ng-if="showOnline" class="list-group-item" ng-repeat="talkInfo in online" ng-click="startTalk(talkInfo)">
           {{talkInfo}}
         </li>
-        <li class="list-group-item danger">History talk</li>
-        <li class="list-group-item" ng-repeat="talkInfo in history" ng-click="startTalk(talkInfo.client)">
+        <li ng-click="showHistory = !showHistory" class="list-group-item danger">History talk</li>
+        <li ng-if="showHistory" class="list-group-item" ng-repeat="talkInfo in history" ng-click="startTalk(talkInfo.client)">
           {{talkInfo.client}}
           <span ng-if="talkInfo.unread" class="badge">{{talkInfo.unread}}</span>
         </li>
       </ul>
     </div>
-    <div id="chatDiv" class="col-lg-9 chat-talk">
+    <div id="chatDiv" class="col-sm-9 chat-talk">
       <ul id="chat" class="messages">
         <li class="message left appeared">
           <div class="text_wrapper">
