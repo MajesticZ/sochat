@@ -123,5 +123,4 @@ server.listen(8080, function() {});
 
 // TODO
 // https
-// list rolup
 // watchifi

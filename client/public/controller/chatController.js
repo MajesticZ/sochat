@@ -7,21 +7,25 @@ app.controller('ChatController', [
     function($scope, $http, $cookies) {
         $scope.login = $cookies.get('login');
         $scope.token = $cookies.get('token');
+        $scope.showOnline = false;
         $scope.online = [];
+        $scope.showHistory = false;
         $scope.history = [];
         $scope.activeTalk = "";
         $scope.msg = "";
 
         $scope.addToHistoryIfDontExist = function(user) {
-            var isInHistory = false;
-            for (var i in $scope.history) {
-                if ($scope.history[i].client === user) {
-                    isInHistory = true;
-                    break;
+            if (user !== "") {
+                var isInHistory = false;
+                for (var i in $scope.history) {
+                    if ($scope.history[i].client === user) {
+                        isInHistory = true;
+                        break;
+                    }
                 }
-            }
-            if (!isInHistory) {
-                $scope.history.push({client: user});
+                if (!isInHistory) {
+                    $scope.history.push({client: user});
+                }
             }
         };
 
