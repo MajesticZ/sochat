@@ -1,4 +1,5 @@
-const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const socketio = require('socket.io');
 const express = require('express');
 const morgan = require('morgan');
@@ -14,9 +15,14 @@ const UserService = require('./server/service/user-service.js')(mongoose);
 const MessageService = require('./server/service/message-service.js')(mongoose);
 
 // GLOBAL
-var app = express();
-var server = http.createServer(app);
-var io = socketio(server);
+const options = {
+    key: fs.readFileSync('./ssl/key.pem'),
+    cert: fs.readFileSync('./ssl/cert.pem')
+};
+
+const app = express();
+const server = https.createServer(options, app);
+const io = socketio(server);
 
 // EXPRESS SETUP
 app.use(express.static(__dirname + '/client/public'));
@@ -120,7 +126,3 @@ app.get('*', function(req, res) {
     }
 });
 server.listen(8080, function() {});
-
-// TODO
-// https
-// watchifi

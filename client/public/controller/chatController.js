@@ -44,7 +44,7 @@ app.controller('ChatController', [
             chatDiv.scrollTop = chatDiv.scrollHeight;
         };
         /* global io */
-        var socket = io();
+        var socket = io("https://localhost:8080", {secure: true});
 
         socket.on('connect', function() {
             socket.emit('identify', $scope.login);
