@@ -4,7 +4,7 @@ const uuidV1 = require('uuid/v1');
 
 // CUSTOM MODULES
 const userDao = require('../dao/userDao');
-const connectionInfo = require('../util/connectionInfo');
+const connectionService = require('./connectionService');
 const errorMessage = require('../util/errorMessages');
 
 const TokenTimeout = 800000;
@@ -15,7 +15,7 @@ module.exports = {
       errorMessage.response(res, errorMessage.somethingWrong);
     } else if (user === null) {
       errorMessage.response(res, errorMessage.userDontExist);
-    } else if (login in connectionInfo.connections || (user.token !== '' && user.tokenExpiredTime > new Date())) {
+    } else if (connectionService.connectionWithClientExist(login) || (user.token !== '' && user.tokenExpiredTime > new Date())) {
       errorMessage.response(res, errorMessage.userAlreadySignin);
     } else if (crypto.createHmac('sha256', password).digest('hex') !== user.password) {
       errorMessage.response(res, errorMessage.wrongPassword);

@@ -79,7 +79,7 @@ app.controller('ChatController', [
             });
         };
 
-        socket.on('reciveMsg', function(msg) {
+        socket.on('receiveMsg', function(msg) {
             $scope.createNewMsgInChat(msg);
             $scope.scrollChatDivOnBottom();
         });

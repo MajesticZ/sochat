@@ -2,7 +2,7 @@ const _ = require('lodash');
 
 // CUSTOM MODULES
 const messageDao = require('../dao/messageDao');
-const connectionInfo = require('../util/connectionInfo');
+const connectionService = require('./connectionService');
 
 module.exports = {
   getHistory: (forUser, res) => messageDao.findForReceiver(forUser, (err, history) => {
@@ -37,16 +37,18 @@ module.exports = {
     messageDao.readMessage(reciver1, reciver2, forUser, (err) => {
       if (err) {
         console.log(err);
+      } else {
+        messageDao.findForSpecifiedReceiver(reciver1, reciver2, (errrrrrrrr, msgs) => {
+          if (errrrrrrrr) {
+            console.log(errrrrrrrr);
+          } else {
+            res.json(msgs);
+            res.end();
+            connectionService.createTalkForClientWithHost(forUser, withClient);
+            connectionService.emitRefreshHistoryForUser(forUser);
+          }
+        });
       }
-      messageDao.findForSpecifiedReceiver(reciver1, reciver2, (errrrrrrrr, msgs) => {
-        if (errrrrrrrr) {
-          console.log(errrrrrrrr);
-        }
-        res.json(msgs);
-        res.end();
-        connectionInfo.connections[forUser].talkWith = withClient;
-        connectionInfo.connections[forUser].emit('refreshHistory');
-      });
     });
   },
   createMassage(host, client, from, time, msg) {
@@ -56,7 +58,9 @@ module.exports = {
     const reciver2 = client < host
       ? host
       : client;
-    const unread = !(client in connectionInfo.connections) || (client in connectionInfo.connections && connectionInfo.connections[client].talkWith !== host);
-    messageDao.createMassage(reciver1, reciver2, host, time, msg, unread);
+    const unread = !(connectionService.connectionWithClientExist(client))
+      || (connectionService.connectionWithClientExist(client)
+        && connectionService.clientDontTalkWithHost(client, host));
+    messageDao.createMassage(reciver1, reciver2, host, time, msg, unread, (err) => (err ? console.log(err) : null));
   }
 };

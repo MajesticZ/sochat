@@ -5,10 +5,10 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const _ = require('lodash');
 
 // CUSTOM MODULES
-const connectionInfo = require('./server/util/connectionInfo');
+const socketSignal = require('./server/enum/socketSignal');
+const connectionService = require('./server/service/connectionService');
 const userService = require('./server/service/userService');
 const messageService = require('./server/service/messageService');
 
@@ -48,9 +48,9 @@ app.post('/chat/signup', (req, res) => {
 
 app.get('/chat/list/onlineUsers/:forUser/:withToken', (req, res) => {
   userService.checkToken(req.params.forUser, req.params.withToken, res, () => {
-    connectionInfo.getOnlineUser(req.params.forUser, res);
+    connectionService.getOnlineUser(req.params.forUser, res);
   }, () => {
-    connectionInfo.connections[req.params.forUser].emit('sessionExpired');
+    connectionService.emitSessionExpiredForUser(req.params.forUser);
   });
 });
 
@@ -58,7 +58,7 @@ app.get('/chat/history/:forUser/:withToken', (req, res) => {
   userService.checkToken(req.params.forUser, req.params.withToken, res, () => {
     messageService.getHistory(req.params.forUser, res);
   }, () => {
-    connectionInfo.connections[req.params.forUser].emit('sessionExpired');
+    connectionService.emitSessionExpiredForUser(req.params.forUser);
   });
 });
 
@@ -66,45 +66,39 @@ app.get('/chat/history/:forUser/:withToken/:withClient', (req, res) => {
   userService.checkToken(req.params.forUser, req.params.withToken, res, () => {
     messageService.getTalk(req.params.forUser, req.params.withClient, res);
   }, () => {
-    connectionInfo.connections[req.params.forUser].emit('sessionExpired');
+    connectionService.emitSessionExpiredForUser(req.params.forUser);
   });
 });
 
 // SOCKET.IO
 io.on('connection', (socket) => {
-  socket.on('disconnect', () => {
-    socket.broadcast.emit('refreshOnline');
-    delete connectionInfo.connections[socket.forLogin];
+  socket.on(socketSignal.DISCONNECT, () => {
+    socket.broadcast.emit(socketSignal.REFRESH_ONLINE);
+    connectionService.removeConnectionForUser(socket.forLogin);
   });
 
-  socket.on('identify', (login) => {
+  socket.on(socketSignal.IDENTIFY, (login) => {
     if (login) {
-      // eslint-disable-next-line no-param-reassign
-      socket.forLogin = login;
-      connectionInfo.connections[login] = socket;
-      socket.emit('refreshHistory');
-      _.each(connectionInfo.connections, (otherSocket) => otherSocket.emit('refreshOnline'));
+      connectionService.addConnectionForUser(login, socket);
+      connectionService.emitRefreshOnlineForAll();
+      socket.emit(socketSignal.REFRESH_HISTORY);
     } else {
-      socket.emit('sessionExpired');
+      socket.emit(socketSignal.SESSION_EXPIRED);
     }
   });
 
-  socket.on('send', (msg) => {
+  socket.on(socketSignal.SEND, (msg) => {
     messageService.createMassage(msg.host, msg.client, msg.host, msg.time, msg.msg);
-    socket.emit('reciveMsg', {
+    socket.emit(socketSignal.RECEIVE_MSG, {
       msg: msg.msg,
       time: msg.time,
       from: msg.host
     });
-    if (msg.client in connectionInfo.connections) {
-      if (connectionInfo.connections[msg.client].talkWith !== msg.host) {
-        connectionInfo.connections[msg.client].emit('refreshHistory');
+    if (connectionService.connectionWithClientExist(msg.client)) {
+      if (connectionService.clientDontTalkWithHost(msg.client, msg.host)) {
+        connectionService.emitRefreshHistoryForUser(msg.client);
       } else {
-        connectionInfo.connections[msg.client].emit('reciveMsg', {
-          msg: msg.msg,
-          time: msg.time,
-          from: msg.host
-        });
+        connectionService.emitMessageForHost(msg.client, msg);
       }
     }
   });
@@ -133,3 +127,10 @@ server.listen(8443, (err) => {
   }
   console.log(`Server listen on https://localhost:${server.address().port}`);
 });
+
+// ENUMS, EXPRESS ROUTING AND REFACTOR
+// CONTROLLER LAYER
+// LOGGER + CONFIGS
+// SOCKET LAYER
+// UPDATE WEBSTORM AND NODE TO 10
+// MIGRATE TO REACT
