@@ -1,104 +1,66 @@
+const _ = require('lodash');
+
 // CUSTOM MODULES
-const messageModel = require('../model/message');
-const connectionInfo = require('../util/connectionInfo');
+const messageDao = require('../dao/messageDao');
+const connectionService = require('./connectionService');
 
 module.exports = {
-    getHistory: function(forUser, res) {
-        messageModel.find({
-            $and: [
-                {
-                    $or: [
-                        {
-                            'reciver1': forUser
-                        }, {
-                            'reciver2': forUser
-                        }
-                    ]
-                }
-            ]
-        }, function(err, history) {
-          const historyResponse = [];
-          if (err) {
-                console.log(err);
-            } else {
-              const unreadMsg = {};
-              for (let i in history) {
-                    const client = history[i].reciver1 === forUser
-                        ? history[i].reciver2
-                        : history[i].reciver1;
-                    if (!(client in unreadMsg)) {
-                        unreadMsg[client] = 0;
-                    }
-                    if (history[i].unread && history[i].from !== forUser) {
-                        unreadMsg[client]++;
-                    }
-                }
-                for (let client in unreadMsg) {
-                    historyResponse.push({client: client, unread: unreadMsg[client]});
-                }
-                res.json(historyResponse);
-            }
-            res.end();
-        });
-    },
-    getTalk: function(forUser, withClient, res) {
-      const reciver1 = withClient < forUser
-        ? withClient
-        : forUser;
-      const reciver2 = withClient < forUser
-        ? forUser
-        : withClient;
-      messageModel.update({
-            'reciver1': reciver1,
-            'reciver2': reciver2,
-            'from': {
-                $ne: forUser
-            },
-            'unread': true
-        }, {
-            $set: {
-                'unread': false
-            }
-        }, {
-            multi: true
-        }, function(err) {
-            if (err) {
-                console.log(err);
-            } else {
-                messageModel.find({
-                    'reciver1': reciver1,
-                    'reciver2': reciver2
-                }, 'msg time from', function(err, msgs) {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        res.json(msgs);
-                        res.end();
-                        connectionInfo.connections[forUser].talkWith = withClient;
-                        connectionInfo.connections[forUser].emit('refreshHistory');
-                    }
-                });
-            }
-        });
-    },
-    createMassage: function(host, client, from, time, msg) {
-      const reciver1 = client < host
-        ? client
-        : host;
-      const reciver2 = client < host
-        ? host
-        : client;
-      messageModel.create({
-            reciver1: reciver1,
-            reciver2: reciver2,
-            from: host,
-            time: time,
-            msg: msg,
-            unread: !(client in connectionInfo.connections) || (client in connectionInfo.connections && connectionInfo.connections[client].talkWith !== host)
-        }, function(err) {
-            if (err) {
-                console.log(err);
-            }
-        });
+  getHistory: (forUser, res) => messageDao.findForReceiver(forUser, (err, history) => {
+    const historyResponse = [];
+    if (err) {
+      console.log(err);
+    } else {
+      const unreadMsg = {};
+      _.each(history, (story) => {
+        const client = story.reciver1 === forUser
+          ? story.reciver2
+          : story.reciver1;
+        if (!(client in unreadMsg)) {
+          unreadMsg[client] = 0;
+        }
+        if (story.unread && story.from !== forUser) {
+          unreadMsg[client]++;
+        }
+      });
+      _.each(unreadMsg, (unread, client) => historyResponse.push({client, unread}));
+      res.json(historyResponse);
     }
+    res.end();
+  }),
+  getTalk(forUser, withClient, res) {
+    const reciver1 = withClient < forUser
+      ? withClient
+      : forUser;
+    const reciver2 = withClient < forUser
+      ? forUser
+      : withClient;
+    messageDao.readMessage(reciver1, reciver2, forUser, (err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        messageDao.findForSpecifiedReceiver(reciver1, reciver2, (errrrrrrrr, msgs) => {
+          if (errrrrrrrr) {
+            console.log(errrrrrrrr);
+          } else {
+            res.json(msgs);
+            res.end();
+            connectionService.createTalkForClientWithHost(forUser, withClient);
+            connectionService.emitRefreshHistoryForUser(forUser);
+          }
+        });
+      }
+    });
+  },
+  createMassage(host, client, from, time, msg) {
+    const reciver1 = client < host
+      ? client
+      : host;
+    const reciver2 = client < host
+      ? host
+      : client;
+    const unread = !(connectionService.connectionWithClientExist(client))
+      || (connectionService.connectionWithClientExist(client)
+        && connectionService.clientDontTalkWithHost(client, host));
+    messageDao.createMassage(reciver1, reciver2, host, time, msg, unread, (err) => (err ? console.log(err) : null));
+  }
 };

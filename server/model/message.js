@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-const messageSchema = new Schema({
+const messageSchema = new mongoose.Schema({
   reciver1: String,
   reciver2: String,
   from: String,

@@ -7,7 +7,7 @@
     "author": "Patryk Wlazłowicz",
     "scripts": {
         "start": "nodemon server.js",
-        "debug": "node debug server.js",
+        "fix-code": "eslint --fix server server.js",
         "start-db": "mongod --dbpath=database",
         "create-db": "mkdir database",
         "create-ssl-certificate": "mkdir ssl; cd ssl; openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes"
@@ -17,6 +17,7 @@
         "cookie-parser": "^1.4.3",
         "crypto": "0.0.3",
         "express": "^4.16.3",
+        "lodash": "^4.17.10",
         "moment": "^2.22.2",
         "mongoose": "^5.2.12",
         "morgan": "^1.9.0",
@@ -24,6 +25,9 @@
         "uuid": "^3.3.2"
     },
     "devDependencies": {
+        "eslint": "^4.19.1",
+        "eslint-config-airbnb-base": "^13.1.0",
+        "eslint-plugin-import": "^2.14.0",
         "nodemon": "^1.18.4"
     }
 }
