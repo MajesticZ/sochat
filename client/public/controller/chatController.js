@@ -44,7 +44,7 @@ app.controller('ChatController', [
             chatDiv.scrollTop = chatDiv.scrollHeight;
         };
         /* global io */
-        var socket = io("https://localhost:8080", {secure: true});
+        var socket = io("https://localhost:8443", {secure: true});
 
         socket.on('connect', function() {
             socket.emit('identify', $scope.login);
@@ -77,7 +77,7 @@ app.controller('ChatController', [
                 });
                 $scope.scrollChatDivOnBottom();
             });
-        }
+        };
 
         socket.on('reciveMsg', function(msg) {
             $scope.createNewMsgInChat(msg);

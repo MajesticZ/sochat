@@ -6,11 +6,9 @@ const morgan = require('morgan');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const crypto = require('crypto');
 
 // CUSTOM MODULES
 const ConnectionInfo = require('./server/util/connection-info.js');
-const ErrorMessage = require('./server/util/error-messages.js');
 const UserService = require('./server/service/user-service.js')(mongoose);
 const MessageService = require('./server/service/message-service.js')(mongoose);
 
@@ -33,7 +31,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.json({type: 'application/vnd.api+json'}));
 
 // MONGO SETUP
-mongoose.connect('mongodb://localhost:27017/chat');
+mongoose.set('debug', true);
+mongoose.connect('mongodb://localhost/chat');
 
 // ROUTING
 app.post('/chat/signin', function(req, res) {
@@ -46,8 +45,10 @@ app.post('/chat/signup', function(req, res) {
 
 app.get('/chat/list/onlineUsers/:forUser/:withToken', function(req, res) {
     UserService.checkToken(req.params.forUser, req.params.withToken, res, function() {
+        console.log('sss');
         ConnectionInfo.getOnlineUser(req.params.forUser, res);
     }, function() {
+        console.log('falure');
         ConnectionInfo.connections[req.params.forUser].emit('sessionExpired');
     });
 });
@@ -76,7 +77,8 @@ io.on('connection', function(socket) {
     });
 
     socket.on('identify', function(login) {
-        if (login) {
+      console.log(login);
+      if (login) {
             socket.forLogin = login;
             ConnectionInfo.connections[login] = socket;
             socket.emit('refreshHistory');
@@ -112,7 +114,7 @@ io.on('connection', function(socket) {
 
 // STARTUP
 app.get('*', function(req, res) {
-    if (req.cookies && req.cookies.login && req.cookies.token) {
+  if (req.cookies && req.cookies.login && req.cookies.token) {
         UserService.signInWithToken(req.cookies.login, req.cookies.token, {
             failure: './client/index.html',
             success: './client/chat.html',
@@ -125,4 +127,10 @@ app.get('*', function(req, res) {
         res.sendFile('./client/index.html', {"root": __dirname});
     }
 });
-server.listen(8080, function() {});
+server.listen(8443, function (err) {
+  if (err) {
+    console.log(err);
+    throw err;
+  }
+  console.log('Server listen on https://localhost:' + server.address().port);
+});

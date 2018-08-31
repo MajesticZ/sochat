@@ -6,8 +6,8 @@ const uuidV1 = require('uuid/v1');
 const ConnectionInfo = require('../util/connection-info.js');
 const ErrorMessage = require('../util/error-messages.js');
 
-var UserDAO = null;
-var UserService = null;
+let UserDAO = null;
+let UserService = null;
 
 const TokenTimeout = 800000;
 
@@ -59,15 +59,15 @@ module.exports = function(mongoose) {
             });
         },
         createTokenAndResponse: function(user, res) {
-            var token = uuidV1();
-            UserDAO.update({
+          const token = uuidV1();
+          UserDAO.update({
                 _id: user.id
             }, {
                 $set: {
                     token: token,
                     tokenExpiredTime: moment().add(TokenTimeout, 'ms')
                 }
-            }, function(err, updated) {
+            }, function(err) {
                 if (err) {
                     console.log(err);
                     ErrorMessage.response(res, ErrorMessage.somethingWrong);
@@ -78,13 +78,13 @@ module.exports = function(mongoose) {
             });
         },
         createUserAndResponse: function(login, password, res) {
-            var token = uuidV1();
-            UserDAO.create({
+          const token = uuidV1();
+          UserDAO.create({
                 login: login,
                 password: crypto.createHmac('sha256', password).digest('hex'),
                 token: token,
                 tokenExpiredTime: moment().add(TokenTimeout, 'ms')
-            }, function(err, created) {
+            }, function(err) {
                 if (err) {
                     console.log(err);
                     ErrorMessage.response(res, ErrorMessage.somethingWrong);
@@ -105,11 +105,12 @@ module.exports = function(mongoose) {
             });
         },
         checkToken: function(login, token, res, success, failure) {
-            UserDAO.findOne({
+          console.log('checkToken');
+          UserDAO.findOne({
                 'login': login,
                 'token': token
             }, 'login tokenExpiredTime', function(err, user) {
-                if (err) {
+              if (err) {
                     console.log(err);
                     failure(res);
                 } else if (user === null || user.tokenExpiredTime < new Date()) {
@@ -128,12 +129,12 @@ module.exports = function(mongoose) {
                 $set: {
                     tokenExpiredTime: moment().add(TokenTimeout, 'ms')
                 }
-            }, function(err, updated) {
-                if (err) {
+            }, function(err) {
+              if (err) {
                     console.log(err);
                 }
             });
         }
-    }
+    };
     return UserService;
 };

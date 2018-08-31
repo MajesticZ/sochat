@@ -65,3 +65,9 @@ database
 
 # Ternjs
 .tern-project
+
+.idea/
+
+package-lock.json
+ssl/
+
