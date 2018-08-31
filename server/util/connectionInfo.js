@@ -1,14 +1,6 @@
-const connections = {};
+const _ = require('lodash');
 
 module.exports = {
-    connections: connections,
-    getOnlineUser: function(login, res) {
-      const onlineUsers = [];
-      for (let key in connections) {
-            if (key !== login) {
-                onlineUsers.push(key);
-            }
-        }
-        res.json(onlineUsers);
-    }
+  connections: {},
+  getOnlineUser: (login, res) => res.json(_.keys(_.omit(module.exports.connections, login)))
 };
