@@ -3,14 +3,16 @@ const fs = require('fs');
 const socketio = require('socket.io');
 const express = require('express');
 const morgan = require('morgan');
-const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
 // CUSTOM MODULES
-const ConnectionInfo = require('./server/util/connection-info.js');
-const UserService = require('./server/service/user-service.js')(mongoose);
-const MessageService = require('./server/service/message-service.js')(mongoose);
+const connectionInfo = require('./server/util/connectionInfo');
+const userService = require('./server/service/userService');
+const messageService = require('./server/service/messageService');
+
+// MONGO SETUP
+require('./server/db/mongooseConnection');
 
 // GLOBAL
 const options = {
@@ -30,42 +32,37 @@ app.use(bodyParser.urlencoded({'extended': 'true'}));
 app.use(bodyParser.json());
 app.use(bodyParser.json({type: 'application/vnd.api+json'}));
 
-// MONGO SETUP
-mongoose.set('debug', true);
-mongoose.connect('mongodb://localhost/chat');
 
 // ROUTING
 app.post('/chat/signin', function(req, res) {
-    UserService.signIn(req.body.login, req.body.password, res);
+    userService.signIn(req.body.login, req.body.password, res);
 });
 
 app.post('/chat/signup', function(req, res) {
-    UserService.signUp(req.body.login, req.body.password, res);
+    userService.signUp(req.body.login, req.body.password, res);
 });
 
 app.get('/chat/list/onlineUsers/:forUser/:withToken', function(req, res) {
-    UserService.checkToken(req.params.forUser, req.params.withToken, res, function() {
-        console.log('sss');
-        ConnectionInfo.getOnlineUser(req.params.forUser, res);
+    userService.checkToken(req.params.forUser, req.params.withToken, res, function() {
+        connectionInfo.getOnlineUser(req.params.forUser, res);
     }, function() {
-        console.log('falure');
-        ConnectionInfo.connections[req.params.forUser].emit('sessionExpired');
+        connectionInfo.connections[req.params.forUser].emit('sessionExpired');
     });
 });
 
 app.get('/chat/history/:forUser/:withToken', function(req, res) {
-    UserService.checkToken(req.params.forUser, req.params.withToken, res, function() {
-        MessageService.getHistory(req.params.forUser, res);
+    userService.checkToken(req.params.forUser, req.params.withToken, res, function() {
+        messageService.getHistory(req.params.forUser, res);
     }, function() {
-        ConnectionInfo.connections[req.params.forUser].emit('sessionExpired');
+        connectionInfo.connections[req.params.forUser].emit('sessionExpired');
     });
 });
 
 app.get('/chat/history/:forUser/:withToken/:withClient', function(req, res) {
-    UserService.checkToken(req.params.forUser, req.params.withToken, res, function() {
-        MessageService.getTalk(req.params.forUser, req.params.withClient, res);
+    userService.checkToken(req.params.forUser, req.params.withToken, res, function() {
+        messageService.getTalk(req.params.forUser, req.params.withClient, res);
     }, function() {
-        ConnectionInfo.connections[req.params.forUser].emit('sessionExpired');
+        connectionInfo.connections[req.params.forUser].emit('sessionExpired');
     });
 });
 
@@ -73,17 +70,17 @@ app.get('/chat/history/:forUser/:withToken/:withClient', function(req, res) {
 io.on('connection', function(socket) {
     socket.on('disconnect', function() {
         socket.broadcast.emit('refreshOnline');
-        delete ConnectionInfo.connections[socket.forLogin];
+        delete connectionInfo.connections[socket.forLogin];
     });
 
     socket.on('identify', function(login) {
       console.log(login);
       if (login) {
             socket.forLogin = login;
-            ConnectionInfo.connections[login] = socket;
+            connectionInfo.connections[login] = socket;
             socket.emit('refreshHistory');
-            for (var key in ConnectionInfo.connections) {
-                ConnectionInfo.connections[key].emit('refreshOnline');
+            for (let key in connectionInfo.connections) {
+                connectionInfo.connections[key].emit('refreshOnline');
             }
         } else {
             socket.emit('sessionExpired');
@@ -91,17 +88,17 @@ io.on('connection', function(socket) {
     });
 
     socket.on('send', function(msg) {
-        MessageService.createMassage(msg.host, msg.client, msg.host, msg.time, msg.msg);
+        messageService.createMassage(msg.host, msg.client, msg.host, msg.time, msg.msg);
         socket.emit('reciveMsg', {
             msg: msg.msg,
             time: msg.time,
             from: msg.host
         });
-        if (msg.client in ConnectionInfo.connections) {
-            if (ConnectionInfo.connections[msg.client].talkWith !== msg.host) {
-                ConnectionInfo.connections[msg.client].emit('refreshHistory');
+        if (msg.client in connectionInfo.connections) {
+            if (connectionInfo.connections[msg.client].talkWith !== msg.host) {
+                connectionInfo.connections[msg.client].emit('refreshHistory');
             } else {
-                ConnectionInfo.connections[msg.client].emit('reciveMsg', {
+                connectionInfo.connections[msg.client].emit('reciveMsg', {
                     msg: msg.msg,
                     time: msg.time,
                     from: msg.host
@@ -115,7 +112,7 @@ io.on('connection', function(socket) {
 // STARTUP
 app.get('*', function(req, res) {
   if (req.cookies && req.cookies.login && req.cookies.token) {
-        UserService.signInWithToken(req.cookies.login, req.cookies.token, {
+        userService.signInWithToken(req.cookies.login, req.cookies.token, {
             failure: './client/index.html',
             success: './client/chat.html',
             root: {
