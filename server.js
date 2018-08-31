@@ -127,10 +127,3 @@ server.listen(8443, (err) => {
   }
   console.log(`Server listen on https://localhost:${server.address().port}`);
 });
-
-// ENUMS, EXPRESS ROUTING AND REFACTOR
-// CONTROLLER LAYER
-// LOGGER + CONFIGS
-// SOCKET LAYER
-// UPDATE WEBSTORM AND NODE TO 10
-// MIGRATE TO REACT
