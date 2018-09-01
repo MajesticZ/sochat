@@ -61,7 +61,7 @@ app.controller('ChatController', [
         });
 
         socket.on('refreshHistory', function() {
-            $http.get('/chat/history/' + $scope.login + '/' + $scope.token).then(function(res) {
+            $http.get('/chat/list/history/' + $scope.login + '/' + $scope.token).then(function(res) {
                 $scope.history = res.data;
                 $scope.addToHistoryIfDontExist($scope.activeTalk);
             });
@@ -71,7 +71,7 @@ app.controller('ChatController', [
             $scope.addToHistoryIfDontExist(withUser);
             $('#chat').html("");
             $scope.activeTalk = withUser;
-            $http.get('/chat/history/' + $scope.login + '/' + $scope.token + '/' + $scope.activeTalk).then(function(res) {
+            $http.get('/chat/list/history/' + $scope.login + '/' + $scope.token + '/' + $scope.activeTalk).then(function(res) {
                 res.data.forEach(function(msg) {
                     $scope.createNewMsgInChat(msg);
                 });

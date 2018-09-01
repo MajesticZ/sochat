@@ -7,23 +7,25 @@ app.controller('CredentialsController', [
     function($scope, $http, $cookies) {
         $scope.signIn = function() {
             if (!$scope.credentialsForm.$invalid) {
-                $http.post('/chat/signin', {
+                $http.post('/chat/user/signin', {
                     'login': $scope.login,
                     'password': $scope.password
-                }).then(function(res) {
-                    if (res.data.error) {
-                        if (res.data.error.wrongPassword) {
-                            createMassage("Wrong password");
-                        } else if (res.data.error.userDontExist) {
-                            createMassage("User don't exist");
-                        } else if (res.data.error.userAlreadySignin) {
-                            createMassage("User already signin");
-                        } else if (res.data.error.somethingWrong) {
-                            createMassage("Something going wrong with server");
-                        }
-                    } else {
-                        window.location = '/chat/';
+                }).then(function() {
+                  window.location = '/chat/';
+                }, function (res) {
+                  if (res.data.error) {
+                    if (res.data.type === errorTypes.user.wrongPassword) {
+                      createMassage("Wrong password");
+                    } else if (res.data.type === errorTypes.user.dontExist) {
+                      createMassage("User don't exist");
+                    } else if (res.data.type === errorTypes.user.alreadySignIn) {
+                      createMassage("User already signin");
+                    } else if (res.data.type === errorTypes.server.somethingWrong) {
+                      createMassage("Something going wrong with server");
                     }
+                  } else {
+                      createMassage("Something going wrong with server");
+                  }
                 });
             } else {
                 $scope.credentialsForm.$$controls.forEach(function(control) {
@@ -33,19 +35,21 @@ app.controller('CredentialsController', [
         };
         $scope.signUp = function() {
             if (!$scope.credentialsForm.$invalid) {
-                $http.post('/chat/signup', {
+                $http.post('/chat/user/signup', {
                     'login': $scope.login,
                     'password': $scope.password
-                }).then(function(res) {
-                    if (res.data.error) {
-                        if (res.data.error.userAlreadyExist) {
-                            createMassage("User already exist");
-                        } else if (res.data.error.somethingWrong) {
-                            createMassage("Something going wrong with server");
-                        }
-                    } else {
-                        window.location = '/chat/';
+                }).then(function() {
+                  window.location = '/chat/';
+                }, function (res) {
+                  if (res.data.error) {
+                    if (res.data.type === errorTypes.user.alreadyExist) {
+                      createMassage("User already exist");
+                    } else if (res.data.type === errorTypes.server.somethingWrong) {
+                      createMassage("Something going wrong with server");
                     }
+                  } else {
+                      createMassage("Something going wrong with server");
+                  }
                 });
             } else {
                 $scope.credentialsForm.$$controls.forEach(function(control) {

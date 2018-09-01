@@ -8,23 +8,22 @@ module.exports = {
   getHistory: (forUser, res) => messageDao.findForReceiver(forUser, (err, history) => {
     const historyResponse = [];
     if (err) {
-      console.log(err);
-    } else {
-      const unreadMsg = {};
-      _.each(history, (story) => {
-        const client = story.reciver1 === forUser
-          ? story.reciver2
-          : story.reciver1;
-        if (!(client in unreadMsg)) {
-          unreadMsg[client] = 0;
-        }
-        if (story.unread && story.from !== forUser) {
-          unreadMsg[client]++;
-        }
-      });
-      _.each(unreadMsg, (unread, client) => historyResponse.push({client, unread}));
-      res.json(historyResponse);
+      return console.log(err);
     }
+    const unreadMsg = {};
+    _.each(history, (story) => {
+      const client = story.reciver1 === forUser
+        ? story.reciver2
+        : story.reciver1;
+      if (!(client in unreadMsg)) {
+        unreadMsg[client] = 0;
+      }
+      if (story.unread && story.from !== forUser) {
+        unreadMsg[client]++;
+      }
+    });
+    _.each(unreadMsg, (unread, client) => historyResponse.push({client, unread}));
+    res.json(historyResponse);
     res.end();
   }),
   getTalk(forUser, withClient, res) {
@@ -36,19 +35,19 @@ module.exports = {
       : withClient;
     messageDao.readMessage(reciver1, reciver2, forUser, (err) => {
       if (err) {
-        console.log(err);
-      } else {
-        messageDao.findForSpecifiedReceiver(reciver1, reciver2, (errrrrrrrr, msgs) => {
-          if (errrrrrrrr) {
-            console.log(errrrrrrrr);
-          } else {
-            res.json(msgs);
-            res.end();
-            connectionService.createTalkForClientWithHost(forUser, withClient);
-            connectionService.emitRefreshHistoryForUser(forUser);
-          }
-        });
+        return console.log(err);
       }
+      messageDao.findForSpecifiedReceiver(reciver1, reciver2, (errrrrrrrr, msgs) => {
+        if (errrrrrrrr) {
+          return console.log(errrrrrrrr);
+        }
+        res.json(msgs);
+        res.end();
+        connectionService.createTalkForClientWithHost(forUser, withClient);
+        connectionService.emitRefreshHistoryForUser(forUser);
+
+      });
+
     });
   },
   createMassage(host, client, from, time, msg) {
