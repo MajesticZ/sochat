@@ -7,13 +7,15 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
 // CUSTOM MODULES
-const socketSignal = require('./server/enum/socketSignal');
-const connectionService = require('./server/service/connectionService');
-const userService = require('./server/service/userService');
-const messageService = require('./server/service/messageService');
+const socketSignal = require('./enum/socketSignal');
+const connectionService = require('./service/connectionService');
+const userRouter = require('./router/user');
+const listRouter = require('./router/list');
+const userService = require('./service/userService');
+const messageService = require('./service/messageService');
 
 // MONGO SETUP
-require('./server/db/mongooseConnection');
+require('./db/mongooseConnection');
 
 // GLOBAL
 const options = {
@@ -38,37 +40,8 @@ app.use(bodyParser.json({type: 'application/vnd.api+json'}));
 
 
 // ROUTING
-app.post('/chat/signin', (req, res) => {
-  userService.signIn(req.body.login, req.body.password, res);
-});
-
-app.post('/chat/signup', (req, res) => {
-  userService.signUp(req.body.login, req.body.password, res);
-});
-
-app.get('/chat/list/onlineUsers/:forUser/:withToken', (req, res) => {
-  userService.checkToken(req.params.forUser, req.params.withToken, res, () => {
-    connectionService.getOnlineUser(req.params.forUser, res);
-  }, () => {
-    connectionService.emitSessionExpiredForUser(req.params.forUser);
-  });
-});
-
-app.get('/chat/history/:forUser/:withToken', (req, res) => {
-  userService.checkToken(req.params.forUser, req.params.withToken, res, () => {
-    messageService.getHistory(req.params.forUser, res);
-  }, () => {
-    connectionService.emitSessionExpiredForUser(req.params.forUser);
-  });
-});
-
-app.get('/chat/history/:forUser/:withToken/:withClient', (req, res) => {
-  userService.checkToken(req.params.forUser, req.params.withToken, res, () => {
-    messageService.getTalk(req.params.forUser, req.params.withClient, res);
-  }, () => {
-    connectionService.emitSessionExpiredForUser(req.params.forUser);
-  });
-});
+app.use('/chat/user', userRouter);
+app.use('/chat/list', listRouter);
 
 // SOCKET.IO
 io.on('connection', (socket) => {
@@ -105,21 +78,23 @@ io.on('connection', (socket) => {
 
 });
 
-// STARTUP
+// SERVE FRONTEND
 app.get('*', (req, res) => {
   if (req.cookies && req.cookies.login && req.cookies.token) {
     userService.signInWithToken(req.cookies.login, req.cookies.token, {
-      failure: './client/index.html',
-      success: './client/chat.html',
+      failure: '../client/index.html',
+      success: '../client/chat.html',
       root: {
         root: __dirname
       }
     }, res);
   } else {
     res.location('/');
-    res.sendFile('./client/index.html', {root: __dirname});
+    res.sendFile('../client/index.html', {root: __dirname});
   }
 });
+
+// STARTUP
 server.listen(8443, (err) => {
   if (err) {
     console.log(err);

@@ -1,21 +1,21 @@
 {
-    "name": "chat-example",
-    "version": "0.0.1",
-    "description": "A chat example to showcase how to use `socket.io` with a static `express` server with `async` for control flow.",
+    "name": "sochat",
+    "version": "0.1.1",
+    "description": "A simple chat example based on socket.io",
     "main": "server.js",
     "repository": "",
     "author": "Patryk Wlazłowicz",
     "scripts": {
         "start": "nodemon server.js",
-        "fix-code": "eslint --fix server server.js",
-        "start-db": "mongod --dbpath=database",
-        "create-db": "mkdir database",
-        "create-ssl-certificate": "mkdir ssl; cd ssl; openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes"
+        "eslint:inspect": "eslint server server.js",
+        "eslint:fix": "eslint --fix server server.js",
+        "db:start": "mongod --dbpath=../database",
+        "db:create": "mkdir ../database",
+        "ssl:init-certificate": "mkdir ../ssl; cd ../ssl; openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes"
     },
     "dependencies": {
         "body-parser": "^1.18.3",
         "cookie-parser": "^1.4.3",
-        "crypto": "0.0.3",
         "express": "^4.16.3",
         "lodash": "^4.17.10",
         "moment": "^2.22.2",
@@ -25,7 +25,7 @@
         "uuid": "^3.3.2"
     },
     "devDependencies": {
-        "eslint": "^4.19.1",
+        "eslint": "^5.5.0",
         "eslint-config-airbnb-base": "^13.1.0",
         "eslint-plugin-import": "^2.14.0",
         "nodemon": "^1.18.4"
