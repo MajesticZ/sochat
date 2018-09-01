@@ -19,8 +19,8 @@ require('./db/mongooseConnection');
 
 // GLOBAL
 const options = {
-  key: fs.readFileSync('./ssl/key.pem'),
-  cert: fs.readFileSync('./ssl/cert.pem')
+  key: fs.readFileSync('../ssl/key.pem'),
+  cert: fs.readFileSync('../ssl/cert.pem')
 };
 
 const app = express();
@@ -28,7 +28,7 @@ const server = https.createServer(options, app);
 const io = socketio(server);
 
 // EXPRESS SETUP
-app.use(express.static(`${__dirname}/client/public`));
+app.use(express.static(`${__dirname}/../client/public`));
 // app.use(morgan('dev'));
 app.use(morgan('combined', {
   skip: (req, res) => res.statusCode < 400
@@ -82,15 +82,15 @@ io.on('connection', (socket) => {
 app.get('*', (req, res) => {
   if (req.cookies && req.cookies.login && req.cookies.token) {
     userService.signInWithToken(req.cookies.login, req.cookies.token, {
-      failure: '../client/index.html',
-      success: '../client/chat.html',
+      failure: './client/index.html',
+      success: './client/chat.html',
       root: {
-        root: __dirname
+        root: `${__dirname}/..`
       }
     }, res);
   } else {
     res.location('/');
-    res.sendFile('../client/index.html', {root: __dirname});
+    res.sendFile('./client/index.html', {root: `${__dirname}/..`});
   }
 });
 
