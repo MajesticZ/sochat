@@ -3,28 +3,24 @@ const messageModel = require('../model/message');
 
 module.exports = {
   findForReceiver: (forUser, cb) => messageModel.find({
-    $and: [
+    $or: [
       {
-        $or: [
-          {
-            reciver1: forUser
-          }, {
-            reciver2: forUser
-          }
-        ]
+        receiver1: forUser
+      }, {
+        receiver2: forUser
       }
     ]
   }, cb),
-  findForSpecifiedReceiver: (reciver1, reciver2, cb) => {
+  findForSpecifiedReceiver: (receiver1, receiver2, cb) => {
     messageModel.find({
-      reciver1,
-      reciver2
+      receiver1,
+      receiver2
     }, 'msg time from', cb);
   },
-  readMessage: (reciver1, reciver2, forUser, cb) => {
+  readMessage: (receiver1, receiver2, forUser, cb) => {
     messageModel.update({
-      reciver1,
-      reciver2,
+      receiver1,
+      receiver2,
       from: {
         $ne: forUser
       },
@@ -37,9 +33,9 @@ module.exports = {
       multi: true
     }, cb);
   },
-  createMassage: (reciver1, reciver2, host, time, msg, unread, cb) => messageModel.create({
-    reciver1,
-    reciver2,
+  createMassage: (receiver1, receiver2, host, time, msg, unread, cb) => messageModel.create({
+    receiver1,
+    receiver2,
     from: host,
     time,
     msg,

@@ -20,7 +20,7 @@ module.exports = {
     privateState[login].talkWith = host;
   },
   clientDontTalkWithHost: (login, host) => privateState[login].talkWith !== host,
-  getOnlineUser: (login, res) => res.json(_.keys(_.omit(privateState, login))),
+  getOnlineUser: (login, cb) => cb(null, _.keys(_.omit(privateState, login))),
   emitMessageForHost: (host, msg) => privateState[host].emit(socketSignal.RECEIVE_MSG, {
     msg: msg.msg,
     time: msg.time,
@@ -28,5 +28,5 @@ module.exports = {
   }),
   emitRefreshOnlineForAll: () => _.each(privateState, (socket) => socket.emit(socketSignal.REFRESH_ONLINE)),
   emitRefreshHistoryForUser: (login) => privateState[login].emit(socketSignal.REFRESH_HISTORY),
-  emitSessionExpiredForUser: (login) => privateState[login].emit(socketSignal.SESSION_EXPIRED),
+  emitSessionExpiredForUser: (login) => (privateState[login] ? privateState[login].emit(socketSignal.SESSION_EXPIRED) : null),
 };

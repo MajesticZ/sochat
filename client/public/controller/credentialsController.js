@@ -20,8 +20,6 @@ app.controller('CredentialsController', [
                       createMassage("User don't exist");
                     } else if (res.data.type === errorTypes.user.alreadySignIn) {
                       createMassage("User already signin");
-                    } else if (res.data.type === errorTypes.server.somethingWrong) {
-                      createMassage("Something going wrong with server");
                     }
                   } else {
                       createMassage("Something going wrong with server");
@@ -44,8 +42,6 @@ app.controller('CredentialsController', [
                   if (res.data.error) {
                     if (res.data.type === errorTypes.user.alreadyExist) {
                       createMassage("User already exist");
-                    } else if (res.data.type === errorTypes.server.somethingWrong) {
-                      createMassage("Something going wrong with server");
                     }
                   } else {
                       createMassage("Something going wrong with server");
