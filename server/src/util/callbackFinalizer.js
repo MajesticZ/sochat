@@ -1,7 +1,7 @@
 const util = require('util');
 const _ = require('lodash');
 
-module.exports.finalizeRequest = (result, res, httpStatus) => {
+function finalizeRequest(result, res, httpStatus) {
   const endStatus = httpStatus || (result && result.error ? 400 : 200);
 
   if (result) {
@@ -11,4 +11,8 @@ module.exports.finalizeRequest = (result, res, httpStatus) => {
     return res.status(endStatus).json(result);
   }
   return res.status(endStatus).end();
+}
+
+module.exports = {
+  finalizeRequest
 };
