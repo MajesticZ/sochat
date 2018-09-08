@@ -36,12 +36,7 @@ module.exports = {
   signUp: (req, res) => {
     async.waterfall([
       (cb) => userService.findByLogin(req.body.login, cb),
-      (user, cb) => {
-        if (!user) {
-          return cb(errorMessage.user.alreadyExist);
-        }
-        return cb(null, user);
-      },
+      (user, cb) => (user ? cb(errorMessage.user.alreadyExist) : cb(null, user)),
       (user, cb) => userService.createUser(req.body.login, req.body.password, cb)
     ], (err, login, token) => {
       cookieController.addSessionCookie(login, token, res);
