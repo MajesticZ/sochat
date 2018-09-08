@@ -8,6 +8,7 @@
         "no-console": ["warn"],
         "arrow-parens": ["error", "always"],
         "object-curly-spacing": ["off"],
-        "padded-blocks": ["off"]
+        "padded-blocks": ["off"],
+        "no-use-before-define": ["off"]
     }
 }

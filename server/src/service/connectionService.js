@@ -7,26 +7,59 @@ const socketSignal = require('../enum/socketSignal');
 const privateState = {};
 
 module.exports = {
-  addConnectionForUser: (login, socket) => {
-    // eslint-disable-next-line no-param-reassign
-    socket.forLogin = login;
-    privateState[login] = socket;
-  },
-  removeConnectionForUser: (login) => {
-    delete privateState[login];
-  },
-  connectionWithClientExist: (login) => _.includes(_.keys(privateState), login),
-  createTalkForClientWithHost: (login, host) => {
-    privateState[login].talkWith = host;
-  },
-  clientDontTalkWithHost: (login, host) => privateState[login].talkWith !== host,
-  getOnlineUser: (login, cb) => cb(null, _.keys(_.omit(privateState, login))),
-  emitMessageForHost: (host, msg) => privateState[host].emit(socketSignal.RECEIVE_MSG, {
+  addConnectionForUser,
+  removeConnectionForUser,
+  connectionWithClientExist,
+  createTalkForClientWithHost,
+  clientDontTalkWithHost,
+  getOnlineUser,
+  emitMessageForHost,
+  emitRefreshOnlineForAll,
+  emitRefreshHistoryForUser,
+  emitSessionExpiredForUser
+};
+function addConnectionForUser(login, socket) {
+  // eslint-disable-next-line no-param-reassign
+  socket.forLogin = login;
+  privateState[login] = socket;
+}
+
+function removeConnectionForUser(login) {
+  delete privateState[login];
+}
+
+function connectionWithClientExist(login) {
+  return _.includes(_.keys(privateState), login);
+}
+
+function createTalkForClientWithHost(login, host) {
+  privateState[login].talkWith = host;
+}
+
+function clientDontTalkWithHost(login, host) {
+  return privateState[login].talkWith !== host;
+}
+
+function getOnlineUser(login, cb) {
+  return cb(null, _.keys(_.omit(privateState, login)));
+}
+
+function emitMessageForHost(host, msg) {
+  privateState[host].emit(socketSignal.RECEIVE_MSG, {
     msg: msg.msg,
     time: msg.time,
     from: msg.host
-  }),
-  emitRefreshOnlineForAll: () => _.each(privateState, (socket) => socket.emit(socketSignal.REFRESH_ONLINE)),
-  emitRefreshHistoryForUser: (login) => privateState[login].emit(socketSignal.REFRESH_HISTORY),
-  emitSessionExpiredForUser: (login) => (privateState[login] ? privateState[login].emit(socketSignal.SESSION_EXPIRED) : null),
-};
+  });
+}
+
+function emitRefreshOnlineForAll() {
+  _.each(privateState, (socket) => socket.emit(socketSignal.REFRESH_ONLINE));
+}
+
+function emitRefreshHistoryForUser(login) {
+  privateState[login].emit(socketSignal.REFRESH_HISTORY);
+}
+
+function emitSessionExpiredForUser(login) {
+  (privateState[login] ? privateState[login].emit(socketSignal.SESSION_EXPIRED) : null);
+}
