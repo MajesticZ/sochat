@@ -7,13 +7,14 @@
     "author": "Patryk Wlazłowicz",
     "scripts": {
         "start": "nodemon server.js",
-        "eslint:inspect": "eslint server server.js",
-        "eslint:fix": "eslint --fix server server.js",
+        "eslint:inspect": "eslint src server.js",
+        "eslint:fix": "eslint --fix src server.js",
         "db:start": "mongod --dbpath=../database",
         "db:create": "mkdir ../database",
         "ssl:init-certificate": "mkdir ../ssl; cd ../ssl; openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes"
     },
     "dependencies": {
+        "async": "^2.6.1",
         "body-parser": "^1.18.3",
         "cookie-parser": "^1.4.3",
         "express": "^4.16.3",

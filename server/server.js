@@ -7,15 +7,16 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
 // CUSTOM MODULES
-const socketSignal = require('./enum/socketSignal');
-const connectionService = require('./service/connectionService');
-const userRouter = require('./router/user');
-const listRouter = require('./router/list');
-const userService = require('./service/userService');
-const messageService = require('./service/messageService');
+const userController = require('./src/controller/userController');
+const socketSignal = require('./src/enum/socketSignal');
+const connectionService = require('./src/service/connectionService');
+const userRouter = require('./src/router/userRouter');
+const listRouter = require('./src/router/listRouter');
+const messageService = require('./src/service/messageService');
+const undefinedCookieParser = require('./src/util/undefinedCookieParser');
 
 // MONGO SETUP
-require('./db/mongooseConnection');
+require('./src/db/mongooseConnection');
 
 // GLOBAL
 const options = {
@@ -33,7 +34,7 @@ app.use(express.static(`${__dirname}/../client/public`));
 app.use(morgan('combined', {
   skip: (req, res) => res.statusCode < 400
 }));
-app.use(cookieParser());
+app.use(undefinedCookieParser(), cookieParser());
 app.use(bodyParser.urlencoded({extended: 'true'}));
 app.use(bodyParser.json());
 app.use(bodyParser.json({type: 'application/vnd.api+json'}));
@@ -81,13 +82,14 @@ io.on('connection', (socket) => {
 // SERVE FRONTEND
 app.get('*', (req, res) => {
   if (req.cookies && req.cookies.login && req.cookies.token) {
-    userService.signInWithToken(req.cookies.login, req.cookies.token, {
+    req.finalUrls = {
       failure: './client/index.html',
       success: './client/chat.html',
       root: {
         root: `${__dirname}/..`
       }
-    }, res);
+    };
+    userController.signInWithToken(req, res);
   } else {
     res.location('/');
     res.sendFile('./client/index.html', {root: `${__dirname}/..`});

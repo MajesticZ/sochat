@@ -6,9 +6,6 @@ function createErrorEnum(name) {
 }
 
 module.exports = {
-  server: {
-    somethingWrong: createErrorEnum('server.something.wrong')
-  },
   user: {
     dontExist: createErrorEnum('user.dont.exist'),
     alreadyExist: createErrorEnum('user.already.exist'),
