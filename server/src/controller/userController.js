@@ -30,7 +30,9 @@ function signIn(req, res) {
     },
     (user, cb) => userService.createTokenForUser(user, cb)
   ], (err, user, token) => {
-    cookieController.addSessionCookie(user.login, token, res);
+    if (!err) {
+      cookieController.addSessionCookie(user.login, token, res);
+    }
     callbackFinalizer.finalizeRequest(err, res);
   });
 }
@@ -48,7 +50,9 @@ function signUp(req, res) {
     (user, cb) => (user ? cb(errorMessage.user.alreadyExist) : cb(null, user)),
     (user, cb) => userService.createUser(req.body.login, req.body.password, cb)
   ], (err, login, token) => {
-    cookieController.addSessionCookie(login, token, res);
+    if (!err) {
+      cookieController.addSessionCookie(login, token, res);
+    }
     callbackFinalizer.finalizeRequest(err, res);
   });
 }
